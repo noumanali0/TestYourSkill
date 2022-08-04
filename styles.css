@@ -8,12 +8,19 @@
 }
 
 body {
-  background: lightgreen;
+  background: lightgreen !important;
 }
 
 ::selection {
   color: #fff;
   background: #007bff;
+}
+
+.spinnner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 .start_btn,
