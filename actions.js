@@ -8,13 +8,16 @@ const option_list = document.querySelector(".option_list");
 const next_btn = document.querySelector(".next_btn");
 const quesCounetr = document.querySelector("footer .total_que");
 const timer_sec = document.querySelector(".timer_sec");
-const spinner = document.querySelector(".text-success");
+const spinner = document.querySelector(".text-secondary");
+const restart = document.querySelector(".restartQui");
 
 var question = [];
 var indexCount = 0;
+var timerInterval;
 
 const timer = (timerCount) => {
-  const timerInterval = setInterval(() => {
+  timer_sec.innerText = timerCount;
+  timerInterval = setInterval(() => {
     if (timerCount > 0) {
       timerCount = timerCount - 1;
       timer_sec.innerText = timerCount;
@@ -35,36 +38,44 @@ exit_btn.onclick = () => {
   info_box.classList.remove("activeInfo");
 };
 
-cnt_btn.onclick = async () => {
-  // const res = await fetch("https://opentdb.com/api.php?amount=10");
-  // const resJson = await res.json();
-  // questions = resJson.results;
-  if (!resJson) {
-    info_box.classList.remove("activeInfo");
-    spinner.classList.remove("d-none");
-    spinner.classList.add("spinner-grow");
-  } else {
-    spinner.classList.remove("spinner-grow");
+restart.onclick = () => {
+  indexCount = 0;
+};
 
-    quiz_box.classList.add("activeQuiz");
-    showQuestion(indexCount);
-    timer(15);
-  }
+cnt_btn.onclick = () => {
+  spinner.classList.remove("d-none");
+  spinner.classList.add("spinner-grow");
+  info_box.classList.remove("activeInfo");
+  start_btn.setAttribute("hidden", "");
+  fetch("https://opentdb.com/api.php?amount=10")
+    .then((resJson) => resJson.json())
+    .then((data) => {
+      setTimeout(() => {
+        questions = data.results;
+
+        spinner.classList.add("d-none");
+        quiz_box.classList.add("activeQuiz");
+        showQuestion(indexCount);
+        timer(15);
+      }, 100);
+    })
+    .catch((err) => console.log(err));
 };
 
 const showQuestion = (index) => {
-  let question = `<span>${index + 1} . ${questions[index].question}  </span>`;
+  console.log(index);
+  let question = `<span>${index + 1} . ${questions[index].question} </span>`;
   que_text.innerHTML = question;
   const { incorrect_answers } = questions[index];
 
   const option =
     questions[index].incorrect_answers.length == 1
       ? `<div class="option"><span>${questions[index].incorrect_answers[0]}</span></div>
-      <div class="option"><span>${questions[index].correct_answer}</span></div>`
+        <div class="option"><span>${questions[index].correct_answer}</span></div>`
       : `<div class="option"><span>${questions[index].incorrect_answers[0]}</span></div> 
-        <div class="option"><span>${questions[index].incorrect_answers[1]}</span></div>
-        <div class="option"><span>${questions[index].incorrect_answers[2]}</span></div>
-        <div class="option"><span>${questions[index].correct_answer}</span></div>`;
+          <div class="option"><span>${questions[index].incorrect_answers[1]}</span></div>
+          <div class="option"><span>${questions[index].incorrect_answers[2]}</span></div>
+          <div class="option"><span>${questions[index].correct_answer}</span></div>`;
 
   option_list.innerHTML = option;
 
@@ -95,11 +106,17 @@ const optionSelected = (context) => {
 };
 
 next_btn.onclick = () => {
-  if (indexCount < 10) {
+  clearTimeout(timerInterval);
+  // console.log(indexCount);
+  if (indexCount < questions.length - 1) {
     indexCount = indexCount + 1;
+    showQuestion(indexCount);
+    timer(15);
+    questionCounter(indexCount);
   }
-  showQuestion(indexCount);
-  questionCounter(indexCount);
+  if (indexCount == questions.length - 1) {
+    next_btn.setAttribute("hidden", "");
+  }
 };
 
 const questionCounter = (index) => {
